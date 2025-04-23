@@ -1,0 +1,9 @@
+django ~= 4.2.0 # 4.2以上4.3未満
+djangorestframework==3.15.2 # 追加
+django-environ
+# M1Macはpsycopg2、それ以外はpsycopg2-binary
+psycopg2-binary == 2.9.6
+pylint-django
+pytest-django
+pytest-xdist
+Pillow

@@ -1,0 +1,17 @@
+{
+  "cSpell.words": [
+    "authtoken",
+    "nonexistentuser",
+    "pytest",
+    "strongpassword",
+    "talisker",
+    "tastingnote",
+    "testpaths",
+    "updateduser"
+  ],
+  "python.testing.pytestArgs": [
+    "accounts"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}

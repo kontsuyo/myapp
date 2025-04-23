@@ -1,0 +1,3 @@
+[MESSAGES CONTROL]
+disable=attribute-defined-outside-init
+disable=W0621
