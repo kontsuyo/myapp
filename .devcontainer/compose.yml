@@ -12,7 +12,7 @@ services:
     volumes:
       - ../db/database:/var/lib/postgresql/data
   djangoapp:
-    image: django/djangoapp:1.0
+    image: django/cyclehood:latest
     build: ./djangoapp
     container_name: "djangoapp_myapp"
     ports:
