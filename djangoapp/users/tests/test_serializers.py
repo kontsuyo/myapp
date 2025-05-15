@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from users.models import Account
-from users.serializers import RegisterSerializer
+from users.serializers import LoginSerializer, RegisterSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,6 @@ def test_register_serializer_password_too_short():
     )
 
 
-@pytest.mark.django_db
 def test_register_serializer_empty_fields():
     data = {
         "username": "",
@@ -102,7 +101,6 @@ def test_register_serializer_username_too_short():
     assert "ユーザ名は4文字以上にしてください。" in str(serializer.errors["username"])
 
 
-@pytest.mark.django_db
 def test_register_serializer_username_too_long():
     data = {
         "username": "thisisaverylongusername",
@@ -143,3 +141,48 @@ def test_register_serializer_existing_username():
     assert "ユーザー名は使われています。他のものを選んでください" in str(
         serializer.errors["username"]
     )
+
+
+@pytest.mark.django_db
+def test_login_serializer_valid_data():
+    Account.objects.create_user(username="testuser", password="strongpassword")
+    data = {
+        "username": "testuser",
+        "password": "strongpassword",
+    }
+    serializer = LoginSerializer(data=data)
+    assert serializer.is_valid(), serializer.errors
+
+
+def test_login_serializer_empty_fields():
+    data = {
+        "username": "",
+        "password": "",
+    }
+    serializer = LoginSerializer(data=data)
+    assert not serializer.is_valid()
+    assert "ユーザ名を入力してください。" in str(serializer.errors["username"])
+    assert "パスワードを入力してください。" in str(serializer.errors["password"])
+
+
+@pytest.mark.django_db
+def test_login_serializer_nonexistent_user():
+    data = {
+        "username": "nonexistentuser",
+        "password": "strongpassword",
+    }
+    serializer = LoginSerializer(data=data)
+    assert not serializer.is_valid()
+    assert "ユーザ名が正しくありません。" in str(serializer.errors["username"])
+
+
+@pytest.mark.django_db
+def test_login_serializer_incorrect_password():
+    Account.objects.create_user(username="testuser", password="strongpassword")
+    data = {
+        "username": "testuser",
+        "password": "wrongpassword",
+    }
+    serializer = LoginSerializer(data=data)
+    assert not serializer.is_valid()
+    assert "パスワードが正しくありません。" in str(serializer.errors["password"])

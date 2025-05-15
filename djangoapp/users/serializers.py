@@ -51,3 +51,31 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         return user
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.SlugField(
+        write_only=True,
+        error_messages={"blank": "ユーザ名を入力してください。"},
+    )
+    password = serializers.CharField(
+        write_only=True,
+        error_messages={"blank": "パスワードを入力してください。"},
+    )
+
+    def validate(self, attrs):
+        username = attrs.get("username")
+        password = attrs.get("password")
+
+        user = User.objects.filter(username=username).first()
+        if user is None:
+            raise serializers.ValidationError(
+                {"username": "ユーザ名が正しくありません。"}
+            )
+
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                {"password": "パスワードが正しくありません。"}
+            )
+
+        return attrs

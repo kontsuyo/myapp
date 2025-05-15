@@ -1,8 +1,13 @@
+import logging
+
 import pytest
 from django.db import IntegrityError
 from django.db.utils import DataError
+from rest_framework.authtoken.models import Token
 
 from users.models import Account
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
@@ -60,3 +65,11 @@ def test_account_superuser_creation():
     assert superuser.is_superuser
     assert superuser.is_staff
     assert superuser.check_password("adminpassword")
+
+
+@pytest.mark.django_db
+def test_account_create_auth_token():
+    user = Account.objects.create_user(username="testuser", password="password123")
+    token = Token.objects.get(user=user)
+    assert token.key is not None, "ユーザー作成時にトークンが生成されていません"
+    assert token.user == user
