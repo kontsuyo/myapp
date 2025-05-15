@@ -47,3 +47,69 @@ def test_user_registration_duplicate_username(api_client):
     response = api_client.post(url, data, format="json")
     assert response.status_code == 400
     assert "ユーザー名は使われています。他のものを選んでください" in str(response.data)
+
+
+@pytest.mark.django_db
+def test_user_login_success(api_client):
+    Account.objects.create_user(username="testuser", password="securepassword")
+    url = reverse("login")
+    data = {
+        "username": "testuser",
+        "password": "securepassword",
+    }
+    response = api_client.post(url, data, format="json")
+    assert response.status_code == 200
+    assert response.data["message"] == "ログインに成功しました。"
+    assert "token" in response.data
+    assert response.data["username"] == "testuser"
+
+
+@pytest.mark.django_db
+def test_user_login_invalid_username(api_client):
+    Account.objects.create_user(username="testuser", password="securepassword")
+    url = reverse("login")
+    data = {
+        "username": "wronguser",
+        "password": "securepassword",
+    }
+    response = api_client.post(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザ名が正しくありません。" in str(response.data)
+
+
+@pytest.mark.django_db
+def test_user_login_invalid_password(api_client):
+    Account.objects.create_user(username="testuser", password="securepassword")
+    url = reverse("login")
+    data = {
+        "username": "testuser",
+        "password": "wrongpassword",
+    }
+    response = api_client.post(url, data, format="json")
+    assert response.status_code == 400
+    assert "パスワードが正しくありません。" in str(response.data)
+
+
+@pytest.mark.django_db
+def test_user_login_nonexistent_user(api_client):
+    url = reverse("login")
+    data = {
+        "username": "nonexistentuser",
+        "password": "securepassword",
+    }
+    response = api_client.post(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザ名が正しくありません。" in str(response.data)
+
+
+@pytest.mark.django_db
+def test_user_login_empty_fields(api_client):
+    url = reverse("login")
+    data = {
+        "username": "",
+        "password": "",
+    }
+    response = api_client.post(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザ名を入力してください。" in str(response.data["username"])
+    assert "パスワードを入力してください。" in str(response.data["password"])
