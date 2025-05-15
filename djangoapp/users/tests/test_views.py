@@ -50,6 +50,27 @@ def test_user_registration_duplicate_username(api_client):
 
 
 @pytest.mark.django_db
+def test_user_registration_empty_fields(api_client):
+    url = reverse("register")
+    data = {
+        "username": "",
+        "password": "",
+        "password_confirm": "",
+    }
+    response = api_client.post(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザー名を入力してください。" in str(
+        response.data["username"]
+    )
+    assert "パスワードを入力してください。" in str(
+        response.data["password"]
+    )
+    assert "確認用パスワードを入力してください。" in str(
+        response.data["password_confirm"]
+    )
+
+
+@pytest.mark.django_db
 def test_user_login_success(api_client):
     Account.objects.create_user(username="testuser", password="securepassword")
     url = reverse("login")
@@ -74,7 +95,7 @@ def test_user_login_invalid_username(api_client):
     }
     response = api_client.post(url, data, format="json")
     assert response.status_code == 400
-    assert "ユーザ名が正しくありません。" in str(response.data)
+    assert "ユーザー名が正しくありません。" in str(response.data)
 
 
 @pytest.mark.django_db
@@ -99,7 +120,7 @@ def test_user_login_nonexistent_user(api_client):
     }
     response = api_client.post(url, data, format="json")
     assert response.status_code == 400
-    assert "ユーザ名が正しくありません。" in str(response.data)
+    assert "ユーザー名が正しくありません。" in str(response.data)
 
 
 @pytest.mark.django_db
@@ -111,5 +132,5 @@ def test_user_login_empty_fields(api_client):
     }
     response = api_client.post(url, data, format="json")
     assert response.status_code == 400
-    assert "ユーザ名を入力してください。" in str(response.data["username"])
+    assert "ユーザー名を入力してください。" in str(response.data["username"])
     assert "パスワードを入力してください。" in str(response.data["password"])

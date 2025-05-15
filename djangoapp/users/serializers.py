@@ -10,10 +10,19 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.SlugField(
         max_length=15,
-        error_messages={"max_length": "ユーザー名は15文字までにしてください。"},
+        error_messages={
+            "max_length": "ユーザー名は15文字までにしてください。",
+            "blank": "ユーザー名を入力してください。",
+        },
     )
-    password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
+    password = serializers.CharField(
+        write_only=True,
+        error_messages={"blank": "パスワードを入力してください。"},
+    )
+    password_confirm = serializers.CharField(
+        write_only=True,
+        error_messages={"blank": "確認用パスワードを入力してください。"},
+    )
 
     class Meta:
         model = User
@@ -26,10 +35,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         if not re.match(r"^[a-zA-Z0-9_]+$", value):
             raise serializers.ValidationError(
-                "ユーザ名は英数字と'_'(アンダーバー)が使えます"
+                "ユーザー名は英数字と'_'(アンダーバー)が使えます"
             )
         if not 4 <= len(value):
-            raise serializers.ValidationError("ユーザ名は4文字以上にしてください。")
+            raise serializers.ValidationError("ユーザー名は4文字以上にしてください。")
         return value
 
     def validate_password(self, value):
@@ -56,7 +65,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.SlugField(
         write_only=True,
-        error_messages={"blank": "ユーザ名を入力してください。"},
+        error_messages={"blank": "ユーザー名を入力してください。"},
     )
     password = serializers.CharField(
         write_only=True,
@@ -70,7 +79,7 @@ class LoginSerializer(serializers.Serializer):
         user = User.objects.filter(username=username).first()
         if user is None:
             raise serializers.ValidationError(
-                {"username": "ユーザ名が正しくありません。"}
+                {"username": "ユーザー名が正しくありません。"}
             )
 
         if not user.check_password(password):
