@@ -69,9 +69,15 @@ def test_register_serializer_empty_fields():
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
     logger.debug(serializer.errors)
-    assert "この項目は空にできません。" in str(serializer.errors["username"])
-    assert "この項目は空にできません。" in str(serializer.errors["password"])
-    assert "この項目は空にできません。" in str(serializer.errors["password_confirm"])
+    assert "ユーザー名を入力してください。" in str(
+        serializer.errors["username"]
+    )
+    assert "パスワードを入力してください。" in str(
+        serializer.errors["password"]
+    )
+    assert "確認用パスワードを入力してください。" in str(
+        serializer.errors["password_confirm"]
+    )
 
 
 @pytest.mark.django_db
@@ -83,7 +89,7 @@ def test_register_serializer_invalid_username():
     }
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
-    assert "ユーザ名は英数字と'_'(アンダーバー)が使えます" in str(
+    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(
         serializer.errors["username"]
     )
 
@@ -98,7 +104,7 @@ def test_register_serializer_username_too_short():
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
     assert "username" in serializer.errors
-    assert "ユーザ名は4文字以上にしてください。" in str(serializer.errors["username"])
+    assert "ユーザー名は4文字以上にしてください。" in str(serializer.errors["username"])
 
 
 def test_register_serializer_username_too_long():
@@ -161,7 +167,7 @@ def test_login_serializer_empty_fields():
     }
     serializer = LoginSerializer(data=data)
     assert not serializer.is_valid()
-    assert "ユーザ名を入力してください。" in str(serializer.errors["username"])
+    assert "ユーザー名を入力してください。" in str(serializer.errors["username"])
     assert "パスワードを入力してください。" in str(serializer.errors["password"])
 
 
@@ -173,7 +179,7 @@ def test_login_serializer_nonexistent_user():
     }
     serializer = LoginSerializer(data=data)
     assert not serializer.is_valid()
-    assert "ユーザ名が正しくありません。" in str(serializer.errors["username"])
+    assert "ユーザー名が正しくありません。" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
