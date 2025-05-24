@@ -59,12 +59,8 @@ def test_user_registration_empty_fields(api_client):
     }
     response = api_client.post(url, data, format="json")
     assert response.status_code == 400
-    assert "ユーザー名を入力してください。" in str(
-        response.data["username"]
-    )
-    assert "パスワードを入力してください。" in str(
-        response.data["password"]
-    )
+    assert "ユーザー名を入力してください。" in str(response.data["username"])
+    assert "パスワードを入力してください。" in str(response.data["password"])
     assert "確認用パスワードを入力してください。" in str(
         response.data["password_confirm"]
     )
@@ -134,3 +130,68 @@ def test_user_login_empty_fields(api_client):
     assert response.status_code == 400
     assert "ユーザー名を入力してください。" in str(response.data["username"])
     assert "パスワードを入力してください。" in str(response.data["password"])
+
+
+@pytest.mark.django_db
+def test_user_account_update_success(api_client, user):
+    url = reverse("account-update")
+    api_client.force_authenticate(user=user)
+    data = {
+        "username": "updateduser",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 200
+    assert response.data["message"] == "ユーザー情報が更新されました。"
+    assert response.data["username"] == "updateduser"
+
+
+@pytest.mark.django_db
+def test_user_account_update_invalid_username(api_client, user):
+    url = reverse("account-update")
+    api_client.force_authenticate(user=user)
+    data = {
+        "username": "invalid name",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(
+        response.data["username"]
+    )
+
+
+@pytest.mark.django_db
+def test_user_account_update_duplicate_username(api_client, user):
+    Account.objects.create_user(username="existinguser", password="securepassword")
+    url = reverse("account-update")
+    api_client.force_authenticate(user=user)
+    data = {
+        "username": "existinguser",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザー名は使われています。他のものを選んでください" in str(
+        response.data["username"]
+    )
+
+
+@pytest.mark.django_db
+def test_user_account_update_empty_fields(api_client, user):
+    url = reverse("account-update")
+    api_client.force_authenticate(user=user)
+    data = {
+        "username": "",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 400
+    assert "ユーザー名を入力してください。" in str(response.data["username"])
+
+
+@pytest.mark.django_db
+def test_user_account_update_unauthenticated(api_client):
+    url = reverse("account-update")
+    data = {
+        "username": "updateduser",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 401
+    assert response.data["detail"] == "認証情報が含まれていません。"
