@@ -65,6 +65,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.SlugField(
         write_only=True,
+        # ! invalidのエラーメッセージを追加
         error_messages={"blank": "ユーザー名を入力してください。"},
     )
     password = serializers.CharField(
@@ -88,3 +89,36 @@ class LoginSerializer(serializers.Serializer):
             )
 
         return attrs
+
+
+class AccountUpdateSerializer(serializers.ModelSerializer):
+    username = serializers.SlugField(
+        max_length=15,
+        error_messages={
+            "max_length": "ユーザー名は15文字までにしてください。",
+            "blank": "ユーザー名を入力してください。",
+            "invalid": "ユーザー名は英数字と'_'(アンダーバー)が使えます",
+        },
+    )
+
+    class Meta:
+        model = User
+        fields = ["username"]
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError(
+                "ユーザー名は使われています。他のものを選んでください"
+            )
+        if not re.match(r"^[a-zA-Z0-9_]+$", value):
+            raise serializers.ValidationError(
+                "ユーザー名は英数字と'_'(アンダーバー)が使えます"
+            )
+        if not 4 <= len(value):
+            raise serializers.ValidationError("ユーザー名は4文字以上にしてください。")
+        return value
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get("username", instance.username)
+        instance.save()
+        return instance

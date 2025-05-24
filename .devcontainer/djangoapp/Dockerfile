@@ -7,7 +7,7 @@ FROM python:3.12-slim
 # パッケージのインストール
 RUN apt-get update -qq \
    && apt-get install -y --no-install-recommends \
-   tzdata sudo \
+   tzdata sudo curl jq\
    && rm -rf /var/lib/apt/lists/*
 
 # 作業ディレクトリの作成

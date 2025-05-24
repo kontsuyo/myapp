@@ -1,10 +1,15 @@
 from django.contrib.auth import get_user_model
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.serializers import LoginSerializer, RegisterSerializer
+from users.serializers import (
+    AccountUpdateSerializer,
+    LoginSerializer,
+    RegisterSerializer,
+)
 
 User = get_user_model()
 
@@ -31,6 +36,26 @@ class LoginView(APIView):
                 {
                     "message": "ログインに成功しました。",
                     "token": token.key,
+                    "username": user.username,
+                },
+                status=200,
+            )
+        return Response(serializer.errors, status=400)
+
+
+class AccoutUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def patch(self, request):
+        serializer = AccountUpdateSerializer(instance=request.user, data=request.data)
+        if serializer.is_valid():
+            user = User.objects.get(username=request.user.username)
+            user.username = serializer.validated_data["username"]  # type: ignore
+            user.save()
+            return Response(
+                {
+                    "message": "ユーザー情報が更新されました。",
                     "username": user.username,
                 },
                 status=200,
