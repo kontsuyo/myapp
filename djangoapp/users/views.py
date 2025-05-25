@@ -20,7 +20,16 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "ユーザー登録が完了しました。"}, status=201)
+            user = User.objects.get(username=serializer.validated_data["username"])  # type: ignore
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response(
+                {
+                    "message": "ユーザー登録が完了しました。",
+                    "token": token.key,
+                    "username": user.username,
+                },
+                status=201,
+            )
         return Response(serializer.errors, status=400)
 
 
