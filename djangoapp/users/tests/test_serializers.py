@@ -195,6 +195,17 @@ def test_login_serializer_incorrect_password():
 
 
 @pytest.mark.django_db
+def test_login_serializer_invalid_username():
+    data = {
+        "username": "invalid!name",
+        "password": "strongpassword",
+    }
+    serializer = LoginSerializer(data=data)
+    assert not serializer.is_valid()
+    assert "ユーザー名が正しくありません。" in str(serializer.errors["username"])
+
+
+@pytest.mark.django_db
 def test_account_update_serializer_valid_data():
     user = Account.objects.create_user(username="testuser", password="strongpassword")
     data = {
