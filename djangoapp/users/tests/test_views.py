@@ -20,6 +20,8 @@ def test_user_registration_success(api_client):
     response = api_client.post(url, data, format="json")
     assert response.status_code == 201
     assert response.data["message"] == "ユーザー登録が完了しました。"
+    assert "token" in response.data
+    assert response.data["username"] == "newuser"
     assert Account.objects.filter(username="newuser").exists()
 
 
