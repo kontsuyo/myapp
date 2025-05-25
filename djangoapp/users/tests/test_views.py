@@ -188,7 +188,7 @@ def test_user_account_update_empty_fields(api_client, user):
 
 
 @pytest.mark.django_db
-def test_user_account_update_unauthenticated(api_client):
+def test_user_account_update_requires_authentication(api_client):
     url = reverse("account-update")
     data = {
         "username": "updateduser",
@@ -196,6 +196,20 @@ def test_user_account_update_unauthenticated(api_client):
     response = api_client.patch(url, data, format="json")
     assert response.status_code == 401
     assert response.data["detail"] == "認証情報が含まれていません。"
+
+
+@pytest.mark.django_db
+def test_user_account_update_authenticated_user(api_client, user):
+    url = reverse("account-update")
+    token, _ = Token.objects.get_or_create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    data = {
+        "username": "updateduser",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 200
+    assert response.data["message"] == "ユーザー情報が更新されました。"
+    assert response.data["username"] == "updateduser"
 
 
 @pytest.mark.django_db
