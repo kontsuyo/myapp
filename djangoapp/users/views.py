@@ -61,3 +61,13 @@ class AccoutUpdateView(APIView):
                 status=200,
             )
         return Response(serializer.errors, status=400)
+
+
+class AccountDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def delete(self, request):
+        user = User.objects.get(username=request.user.username)
+        user.delete()
+        return Response({"message": "ユーザーが削除されました。"}, status=200)

@@ -2,6 +2,7 @@ import logging
 
 import pytest
 from django.urls import reverse
+from rest_framework.authtoken.models import Token
 
 from users.models import Account
 
@@ -195,3 +196,31 @@ def test_user_account_update_unauthenticated(api_client):
     response = api_client.patch(url, data, format="json")
     assert response.status_code == 401
     assert response.data["detail"] == "認証情報が含まれていません。"
+
+
+@pytest.mark.django_db
+def test_user_account_delete_success(api_client, user):
+    url = reverse("delete-account")
+    api_client.force_authenticate(user=user)
+    response = api_client.delete(url, format="json")
+    assert response.status_code == 200
+    assert response.data["message"] == "ユーザーが削除されました。"
+    assert not Account.objects.filter(username=user.username).exists()
+
+
+@pytest.mark.django_db
+def test_account_delete_requires_authentication(api_client):
+    url = reverse("delete-account")
+    response = api_client.delete(url)
+    assert response.status_code == 401
+    assert "認証情報が含まれていません。" in str(response.data["detail"])
+
+
+@pytest.mark.django_db
+def test_account_delete_authenticated_user(api_client, user):
+    url = reverse("delete-account")
+    token, _ = Token.objects.get_or_create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    response = api_client.delete(url)
+    assert response.status_code == 200
+    assert response.data["message"] == "ユーザーが削除されました。"
