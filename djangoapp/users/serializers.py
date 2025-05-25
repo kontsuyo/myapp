@@ -65,8 +65,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.SlugField(
         write_only=True,
-        # ! invalidのエラーメッセージを追加
-        error_messages={"blank": "ユーザー名を入力してください。"},
+        error_messages={
+            "blank": "ユーザー名を入力してください。",
+            "invalid": "ユーザー名が正しくありません。",
+        },
     )
     password = serializers.CharField(
         write_only=True,
