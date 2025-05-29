@@ -2,11 +2,13 @@ import logging
 
 import pytest
 
-from users.models import Account
+from users.models import Account, Profile
 from users.serializers import (
     AccountUpdateSerializer,
     LoginSerializer,
+    ProfileSerializer,
     RegisterSerializer,
+    UserSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -280,3 +282,57 @@ def test_account_update_serializer_username_already_exists():
     assert "ユーザー名は使われています。他のものを選んでください" in str(
         serializer.errors["username"]
     )
+
+
+@pytest.mark.django_db
+def test_user_serializer_output():
+    user = Account.objects.create_user(username="testuser", password="strongpassword")
+    serializer = UserSerializer(user)
+    assert serializer.data["username"] == "testuser"
+
+
+@pytest.mark.django_db
+def test_user_serializer_read_only_fields():
+    user = Account.objects.create_user(username="testuser", password="strongpassword")
+    input_data = {
+        "username": "newusername",
+    }
+    serializer = UserSerializer(instance=user, data=input_data, partial=True)
+    assert serializer.is_valid(), serializer.errors
+    updated_user = serializer.save()
+    assert updated_user.username == "testuser"
+
+
+@pytest.mark.django_db
+def test_profile_serializer_output():
+    user = Account.objects.create_user(username="testuser", password="password123")
+    profile = Profile.objects.get(user=user)
+    data = {
+        "handle": "handle",
+        "bio": "bio",
+        "profile_image": None,  # Assuming no image for simplicity
+        "place": "tokyo",
+        "website": "https://example.com",
+    }
+    serializer = ProfileSerializer(instance=profile, data=data, partial=True)
+    assert serializer.is_valid(), serializer.errors
+    serializer.save()
+    data = serializer.data
+    assert data["user"]["username"] == "testuser"
+    assert data["handle"] == "handle"
+    assert data["bio"] == "bio"
+    assert data["place"] == "tokyo"
+
+
+@pytest.mark.django_db
+def test_profile_serializer_user_read_only():
+    user = Account.objects.create_user(username="testuser", password="password123")
+    profile = Profile.objects.get(user=user)
+    data = {
+        "user": {"username": "newusername"},
+    }
+    serializer = ProfileSerializer(instance=profile, data=data, partial=True)
+    assert serializer.is_valid(), serializer.errors
+    serializer.save()
+    updated_data = serializer.data
+    assert updated_data["user"]["username"] == "testuser"

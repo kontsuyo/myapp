@@ -1,13 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.serializers import (
     AccountUpdateSerializer,
     LoginSerializer,
+    ProfileSerializer,
     RegisterSerializer,
 )
 
@@ -80,3 +81,21 @@ class AccountDeleteView(APIView):
         user = User.objects.get(username=request.user.username)
         user.delete()
         return Response({"message": "ユーザーが削除されました。"}, status=200)
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        profile = request.user.profile
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data, status=200)
+
+    def patch(self, request):
+        profile = request.user.profile
+        serializer = ProfileSerializer(instance=profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)

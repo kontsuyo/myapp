@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from users.models import Profile
+
 User = get_user_model()
 
 
@@ -124,3 +126,18 @@ class AccountUpdateSerializer(serializers.ModelSerializer):
         instance.username = validated_data.get("username", instance.username)
         instance.save()
         return instance
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username"]
+        read_only_fields = ["username"]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = ["user", "handle", "bio", "profile_image", "place", "website"]
