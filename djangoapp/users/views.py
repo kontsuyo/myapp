@@ -1,7 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,7 +19,7 @@ from users.serializers import (
 User = get_user_model()
 
 
-class RegisterView(APIView):
+class AccountRegisterView(APIView):
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
