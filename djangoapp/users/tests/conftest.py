@@ -29,3 +29,14 @@ def user():
     """
     user = User.objects.create_user(username="testuser", password="testpassword")
     return user
+
+
+@pytest.fixture
+def profile_data():
+    return {
+        "handle": "Test User",
+        "bio": "This is a test bio.",
+        "profile_image": None,  # Assuming no image for simplicity
+        "place": "Test Place",
+        "website": "https://testuser.com",
+    }

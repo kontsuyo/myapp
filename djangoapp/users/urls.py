@@ -1,6 +1,12 @@
 from django.urls import path
 
-from users.views import AccountDeleteView, AccoutUpdateView, LoginView, RegisterView
+from users.views import (
+    AccountDeleteView,
+    AccoutUpdateView,
+    LoginView,
+    ProfileView,
+    RegisterView,
+)
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),  # !signupに変更
@@ -10,7 +16,7 @@ urlpatterns = [
     ),  # !update_accountに変更
     path("delete_account/", AccountDeleteView.as_view(), name="delete-account"),
     # path("logout/", LogoutView.as_view(), name="logout"),
-    # path("profile/", UserProfileView.as_view(), name="profile"),
+    path("profile/", ProfileView.as_view(), name="profile"),
     # path("update_profile/", UpdateProfileView.as_view(), name="update_profile"),
     # path("password_reset/", PasswordResetView.as_view(), name="password_reset"),
     # path("password_change/", PasswordChangeView.as_view(), name="password_change"),

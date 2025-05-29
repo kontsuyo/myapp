@@ -240,3 +240,49 @@ def test_account_delete_authenticated_user(api_client, user):
     response = api_client.delete(url)
     assert response.status_code == 200
     assert response.data["message"] == "ユーザーが削除されました。"
+
+
+@pytest.mark.django_db
+def test_profile_get_success(api_client, user):
+    url = reverse("profile")
+    api_client.force_authenticate(user=user)
+    response = api_client.get(url, format="json")
+    assert response.status_code == 200
+    assert "handle" in response.data
+    assert "bio" in response.data
+    assert "profile_image" in response.data
+    assert "place" in response.data
+    assert "website" in response.data
+
+
+@pytest.mark.django_db
+def test_profile_patch_success(api_client, user):
+    url = reverse("profile")
+    api_client.force_authenticate(user=user)
+    data = {
+        "handle": "Updated Handle",
+        "bio": "Updated bio.",
+        "place": "Updated Place",
+        "website": "https://updateduser.com",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 200
+    assert response.data["user"]["username"] == user.username
+    assert response.data["handle"] == "Updated Handle"
+    assert response.data["bio"] == "Updated bio."
+    assert response.data["place"] == "Updated Place"
+    assert response.data["website"] == "https://updateduser.com"
+
+
+@pytest.mark.django_db
+def test_profile_patch_requires_authentication(api_client):
+    url = reverse("profile")
+    data = {
+        "handle": "Updated Handle",
+        "bio": "Updated bio.",
+        "place": "Updated Place",
+        "website": "https://updateduser.com",
+    }
+    response = api_client.patch(url, data, format="json")
+    assert response.status_code == 401
+    assert response.data["detail"] == "認証情報が含まれていません。"
