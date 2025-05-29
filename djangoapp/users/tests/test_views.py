@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.django_db
 def test_user_registration_success(api_client):
-    url = reverse("register")
+    url = reverse("register-account")
     data = {
         "username": "newuser",
         "password": "securepassword",
@@ -27,7 +27,7 @@ def test_user_registration_success(api_client):
 
 @pytest.mark.django_db
 def test_user_registration_password_mismatch(api_client):
-    url = reverse("register")
+    url = reverse("register-account")
     data = {
         "username": "newuser",
         "password": "securepassword",
@@ -41,7 +41,7 @@ def test_user_registration_password_mismatch(api_client):
 @pytest.mark.django_db
 def test_user_registration_duplicate_username(api_client):
     Account.objects.create_user(username="existinguser", password="password123")
-    url = reverse("register")
+    url = reverse("register-account")
     data = {
         "username": "existinguser",
         "password": "securepassword",
@@ -54,7 +54,7 @@ def test_user_registration_duplicate_username(api_client):
 
 @pytest.mark.django_db
 def test_user_registration_empty_fields(api_client):
-    url = reverse("register")
+    url = reverse("register-account")
     data = {
         "username": "",
         "password": "",
@@ -137,7 +137,7 @@ def test_user_login_empty_fields(api_client):
 
 @pytest.mark.django_db
 def test_user_account_update_success(api_client, user):
-    url = reverse("account-update")
+    url = reverse("update-account")
     api_client.force_authenticate(user=user)
     data = {
         "username": "updateduser",
@@ -150,7 +150,7 @@ def test_user_account_update_success(api_client, user):
 
 @pytest.mark.django_db
 def test_user_account_update_invalid_username(api_client, user):
-    url = reverse("account-update")
+    url = reverse("update-account")
     api_client.force_authenticate(user=user)
     data = {
         "username": "invalid name",
@@ -165,7 +165,7 @@ def test_user_account_update_invalid_username(api_client, user):
 @pytest.mark.django_db
 def test_user_account_update_duplicate_username(api_client, user):
     Account.objects.create_user(username="existinguser", password="securepassword")
-    url = reverse("account-update")
+    url = reverse("update-account")
     api_client.force_authenticate(user=user)
     data = {
         "username": "existinguser",
@@ -179,7 +179,7 @@ def test_user_account_update_duplicate_username(api_client, user):
 
 @pytest.mark.django_db
 def test_user_account_update_empty_fields(api_client, user):
-    url = reverse("account-update")
+    url = reverse("update-account")
     api_client.force_authenticate(user=user)
     data = {
         "username": "",
@@ -191,7 +191,7 @@ def test_user_account_update_empty_fields(api_client, user):
 
 @pytest.mark.django_db
 def test_user_account_update_requires_authentication(api_client):
-    url = reverse("account-update")
+    url = reverse("update-account")
     data = {
         "username": "updateduser",
     }
@@ -202,7 +202,7 @@ def test_user_account_update_requires_authentication(api_client):
 
 @pytest.mark.django_db
 def test_user_account_update_authenticated_user(api_client, user):
-    url = reverse("account-update")
+    url = reverse("update-account")
     token, _ = Token.objects.get_or_create(user=user)
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
     data = {

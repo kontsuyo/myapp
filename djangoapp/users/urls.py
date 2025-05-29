@@ -2,14 +2,14 @@ from django.urls import path
 
 from users.views import (
     AccountDeleteView,
+    AccountRegisterView,
     AccoutUpdateView,
     LoginView,
     ProfileView,
-    RegisterView,
 )
 
 urlpatterns = [
-    path("signup/", RegisterView.as_view(), name="register"),
+    path("signup/", AccountRegisterView.as_view(), name="register-account"),
     path("login/", LoginView.as_view(), name="login"),
     path("update_account/", AccoutUpdateView.as_view(), name="update-account"),
     path("delete_account/", AccountDeleteView.as_view(), name="delete-account"),
