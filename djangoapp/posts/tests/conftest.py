@@ -1,4 +1,5 @@
 import pytest
+from rest_framework.test import APIClient
 
 from users.models import Account
 
@@ -9,3 +10,8 @@ def user():
         username="testuser",
         password="testpassword",
     )
+
+
+@pytest.fixture
+def api_client():
+    return APIClient()
