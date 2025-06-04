@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -30,3 +30,17 @@ class PostCreateView(APIView):
                 status=201,
             )
         return Response(serializer.errors, status=400)
+
+
+class PostListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username):
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=404)
+        if not user.posts.exists():  # pyright: ignore[reportAttributeAccessIssue]
+            return Response({"detail": "No posts found for this user."}, status=404)
+        posts = user.posts.all()  # pyright: ignore[reportAttributeAccessIssue]
+        serializer = PostSerializer(posts, many=True, context={"request": request})
+        return Response(serializer.data, status=200)
