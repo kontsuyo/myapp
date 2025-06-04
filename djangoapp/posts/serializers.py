@@ -4,12 +4,12 @@ from posts.models import Post
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.CharField(source="author.username")
+    author = serializers.ReadOnlyField(source="author.username")
 
     class Meta:
         model = Post
         fields = ["author", "content", "posted_date"]
-        read_only_fields = ["author", "posted_date"]
+        read_only_fields = ["posted_date"]
 
     def create(self, validated_data):
         user = self.context["request"].user
