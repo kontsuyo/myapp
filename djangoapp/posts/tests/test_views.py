@@ -84,3 +84,51 @@ def test_post_list_view_no_posts(api_client, user):
     logger.info(f"Response data: {response.data}")
     assert response.status_code == 404
     assert response.data["detail"] == "No posts found for this user."
+
+
+@pytest.mark.django_db
+def test_post_detail_view_success(api_client, user):
+    post = Post.objects.create(author=user, content="Test post for detail view")
+    url = reverse(
+        "post-detail",
+        kwargs={
+            "username": user.username,
+            "post_id": post.id,  # pyright: ignore[reportAttributeAccessIssue]
+        },
+    )
+    response = api_client.get(url, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 200
+    assert response.data["author"] == user.username
+    assert response.data["content"] == "Test post for detail view"
+    assert "posted_date" in response.data
+
+
+@pytest.mark.django_db
+def test_post_detail_view_post_not_found(api_client, user):
+    url = reverse(
+        "post-detail",
+        kwargs={
+            "username": user.username,
+            "post_id": 9999,  # Non-existent post ID
+        },
+    )
+    response = api_client.get(url, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 404
+    assert response.data["detail"] == "Post not found."
+
+
+@pytest.mark.django_db
+def test_post_detail_view_user_not_found(api_client):
+    url = reverse(
+        "post-detail",
+        kwargs={
+            "username": "nonexistentuser",
+            "post_id": 1,  # Non-existent user
+        },
+    )
+    response = api_client.get(url, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 404
+    assert response.data["detail"] == "User not found."

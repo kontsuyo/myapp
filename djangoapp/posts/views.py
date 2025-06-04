@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from posts.models import Post
 from posts.serializers import PostSerializer
 
 User = get_user_model()
@@ -43,4 +44,18 @@ class PostListView(APIView):
             return Response({"detail": "No posts found for this user."}, status=404)
         posts = user.posts.all()  # pyright: ignore[reportAttributeAccessIssue]
         serializer = PostSerializer(posts, many=True, context={"request": request})
+        return Response(serializer.data, status=200)
+
+
+class PostDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username, post_id):
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=404)
+        post = Post.objects.filter(id=post_id).first()
+        if not post:
+            return Response({"detail": "Post not found."}, status=404)
+        serializer = PostSerializer(post, context={"request": request})
         return Response(serializer.data, status=200)
