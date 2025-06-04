@@ -47,7 +47,7 @@ class PostListView(APIView):
         return Response(serializer.data, status=200)
 
 
-class PostDetailView(APIView):
+class PostRetrieveView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, username, post_id):
