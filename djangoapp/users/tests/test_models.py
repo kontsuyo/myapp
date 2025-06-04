@@ -111,7 +111,7 @@ def test_profile_bio_max_length():
     user = Account.objects.create_user(username="testuser", password="password123")
     profile = user.profile  # pyright:ignore[reportAttributeAccessIssue]
     profile.bio = "b" * 161
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(DataError) as excinfo:
         profile.save()
     assert "value too long for type character varying(160)" in str(excinfo.value)
 
