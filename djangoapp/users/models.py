@@ -41,7 +41,7 @@ class Profile(models.Model):
         max_length=50,
         verbose_name="ハンドルネーム",
     )
-    bio = models.TextField(
+    bio = models.CharField(
         blank=True,
         max_length=160,
         verbose_name="自己紹介",
