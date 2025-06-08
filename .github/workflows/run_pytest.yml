@@ -8,6 +8,7 @@ on:
 permissions:
   checks: write
   contents: read
+  pull-requests: write
 
 env:
   DB_HOST: 127.0.0.1
