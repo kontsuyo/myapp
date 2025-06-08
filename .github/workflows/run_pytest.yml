@@ -7,11 +7,11 @@ on:
 
 env:
   SECRET_KEY: test
-  DJANGO_SETTINGS_MODULE: config.settings
+  DJANGO_SETTINGS_MODULE: djangoapp.config.settings
   ALLOWED_HOSTS: 127.0.0.1
   # "True"にしないとDEBUG内がFalseになってしまう
   DEBUG: "True"
-  POSTGRES_HOST: db_myapp
+  POSTGRES_HOST: 127.0.0.1
   POSTGRES_PORT: 5432
 
 jobs:
