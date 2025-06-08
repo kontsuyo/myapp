@@ -1,9 +1,9 @@
 name: Run Pytest on Push
 
 on:
-  push:
+  pull_request:
     branches:
-      - "**"
+      - "feat/**"
 
 permissions:
   checks: write
