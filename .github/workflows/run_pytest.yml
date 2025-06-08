@@ -6,9 +6,8 @@ on:
       - "**"
 
 env:
-  DJANGO_SETTINGS_MODULE: config.settings
-  HOST: 127.0.0.1
-  PORT: 5432
+  POSTGRES_HOST: 127.0.0.1
+  POSTGRES_PORT: 5432
   SECRET_KEY: "your_secret_key_here"
 
 jobs:
