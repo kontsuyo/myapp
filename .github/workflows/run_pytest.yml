@@ -6,31 +6,28 @@ on:
       - "**"
 
 env:
-  DB_HOST: db_myapp
-  DB_USER: postgres
-  DB_PASSWORD: postgres
-  DB_NAME: postgres
-  SECRET_KEY: "dummy_secret_key"
-  DEBUG: "1"
-  ALLOWED_HOSTS: "localhost"
+  # The hostname used to communicate with the PostgreSQL service container
+  POSTGRES_HOST: localhost
+  # The default PostgreSQL port
+  POSTGRES_PORT: 5432
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     services:
-      db_myapp:
-        image: postgres:alpine3.18
+      postgres:
+        image: postgres
         env:
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
