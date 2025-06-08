@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       db_myapp:
-        image: postgres:alpine
+        image: postgres:alpine3.18
         env:
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
@@ -46,6 +46,8 @@ jobs:
             pg_isready -h db_myapp -U postgres && break
             sleep 2
           done
+          apt-get update && apt-get install -y postgresql-client
+          psql -h db_myapp -U postgres -d postgres -c '\l' || exit 1
 
       - name: Run pytest
         run: |
