@@ -7,7 +7,7 @@ on:
 
 env:
   SECRET_KEY: test
-  DJANGO_SETTINGS_MODULE: djangoapp.config.settings
+  DJANGO_SETTINGS_MODULE: config.settings
   ALLOWED_HOSTS: 127.0.0.1
   # "True"にしないとDEBUG内がFalseになってしまう
   DEBUG: "True"
@@ -45,13 +45,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest pytest-cov
           pip install -r .devcontainer/djangoapp/requirements.txt || true
-
-      - name: Wait for PostgreSQL
-        run: |
-          for i in {1..30}; do
-            pg_isready -h db_myapp -U postgres && break
-            sleep 2
-          done
 
       - name: Run makemigrations
         run: |
