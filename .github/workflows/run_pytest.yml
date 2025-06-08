@@ -10,6 +10,9 @@ env:
   DB_USER: postgres
   DB_PASSWORD: postgres
   DB_NAME: postgres
+  SECRET_KEY: "dummy_secret_key"
+  DEBUG: "1"
+  ALLOWED_HOSTS: "localhost"
 
 jobs:
   test:
