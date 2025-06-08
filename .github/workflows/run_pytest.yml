@@ -40,6 +40,13 @@ jobs:
       - name: Set SECRET_KEY for Django
         run: echo "SECRET_KEY=dummysecretkeyforci" > djangoapp/.env
 
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            pg_isready -h db_myapp -U postgres && break
+            sleep 2
+          done
+
       - name: Run pytest
         run: |
           mkdir -p reports
