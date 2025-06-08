@@ -5,6 +5,15 @@ on:
     branches:
       - "**"
 
+env:
+  SECRET_KEY: test
+  DJANGO_SETTINGS_MODULE: djangoapp.config.settings
+  ALLOWED_HOSTS: 127.0.0.1
+  # "True"にしないとDEBUG内がFalseになってしまう
+  DEBUG: "True"
+  POSTGRES_HOST: 127.0.0.1
+  POSTGRES_PORT: 5432
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -37,9 +46,6 @@ jobs:
           pip install pytest pytest-cov
           pip install -r .devcontainer/djangoapp/requirements.txt || true
 
-      - name: Set SECRET_KEY for Django
-        run: echo "SECRET_KEY=dummysecretkeyforci" > djangoapp/.env
-
       - name: Wait for PostgreSQL
         run: |
           for i in {1..30}; do
@@ -52,10 +58,10 @@ jobs:
           cd djangoapp
           python manage.py makemigrations --noinput
 
-      - name: Run migrations
+      - name: Run Migrations
         run: |
           cd djangoapp
-          python manage.py migrate
+          python manage.py migrate --noinput
 
       - name: Run pytest
         run: |
