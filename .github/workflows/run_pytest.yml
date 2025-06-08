@@ -47,9 +47,19 @@ jobs:
             sleep 2
           done
 
+      - name: Run makemigrations
+        run: |
+          cd djangoapp
+          python manage.py makemigrations --noinput
+
+      - name: Run migrations
+        run: |
+          cd djangoapp
+          python manage.py migrate
+
       - name: Run pytest
         run: |
-          mkdir -p reports
+          mkdir -p ../reports
           cd djangoapp
           pytest --cov=. --cov-report=xml:../reports/coverage.xml --junitxml=../reports/pytest-report.xml
 
