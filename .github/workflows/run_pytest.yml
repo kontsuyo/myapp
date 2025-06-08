@@ -6,10 +6,9 @@ on:
       - "**"
 
 env:
-  # The hostname used to communicate with the PostgreSQL service container
   POSTGRES_HOST: localhost
-  # The default PostgreSQL port
   POSTGRES_PORT: 5432
+  SECRET_KEY: "your_secret_key_here"
 
 jobs:
   test:
