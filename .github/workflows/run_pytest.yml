@@ -6,13 +6,10 @@ on:
       - "**"
 
 env:
-  SECRET_KEY: test
-  DJANGO_SETTINGS_MODULE: config.settings
-  ALLOWED_HOSTS: 127.0.0.1
-  # "True"にしないとDEBUG内がFalseになってしまう
-  DEBUG: "True"
-  POSTGRES_HOST: 127.0.0.1
-  POSTGRES_PORT: 5432
+  DB_HOST: 127.0.0.1
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  DB_NAME: postgres
 
 jobs:
   test:
