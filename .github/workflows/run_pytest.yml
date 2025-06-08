@@ -6,8 +6,8 @@ on:
       - "**"
 
 env:
-  POSTGRES_HOST: localhost
-  POSTGRES_PORT: 5432
+  HOST: localhost
+  PORT: 5432
   SECRET_KEY: "your_secret_key_here"
 
 jobs:
