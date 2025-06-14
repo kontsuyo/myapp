@@ -10,4 +10,4 @@ class Post(models.Model):
         ordering = ["-posted_date"]
 
     def __str__(self):
-        return f"Post by {self.author.username}"
+        return f"{self.author.username} - {self.posted_date.strftime('%Y-%m-%d %H:%M:%S')}: {self.content[:20]}..." if self.content else f"{self.author.username} - {self.posted_date.strftime('%Y-%m-%d %H:%M:%S')}: (No Content)"

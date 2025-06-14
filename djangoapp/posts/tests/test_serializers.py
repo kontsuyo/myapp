@@ -1,7 +1,13 @@
+import logging
+from datetime import timedelta
+
 import pytest
 from rest_framework.test import APIRequestFactory
 
-from posts.serializers import PostSerializer
+from posts.models import Post
+from posts.serializers import PostSerializer, PostUpdateSerializer
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
@@ -74,3 +80,66 @@ def test_post_serializer_posted_date_read_only(user):
     assert not post.posted_date == "2023-01-01T00:00:00Z"
     assert post.posted_date is not None
     assert post.author == user
+
+
+@pytest.mark.django_db
+def test_post_update_serializer_valid_data(user):
+
+    post = Post.objects.create(author=user, content="Initial content")
+
+    serializer = PostUpdateSerializer(
+        instance=post,
+        data={"content": "Updated content"},
+        partial=True,
+    )
+    assert serializer.is_valid(), serializer.errors
+    updated_post = serializer.save()
+    assert updated_post.content == "Updated content"
+
+
+@pytest.mark.django_db
+def test_post_update_serializer_read_only_fields(user):
+    post = Post.objects.create(author=user, content="Initial content")
+
+    serializer = PostUpdateSerializer(
+        instance=post,
+        data={"author": 9999, "posted_date": "2023-01-01T00:00:00Z"},
+        partial=True,
+    )
+    assert serializer.is_valid(), serializer.errors
+    updated_post = serializer.save()
+
+    assert updated_post.author == user
+    assert updated_post.posted_date == post.posted_date
+
+
+@pytest.mark.django_db
+def test_post_update_serializer_edit_before_30_minutes(user):
+    post = Post.objects.create(author=user, content="Initial content")
+    post.posted_date = post.posted_date - timedelta(minutes=29)
+    post.save()
+
+    serializer = PostUpdateSerializer(
+        instance=post,
+        data={"content": "Updated content"},
+        partial=True,
+    )
+    assert serializer.is_valid(), serializer.errors
+    updated_post = serializer.save()
+    assert updated_post.content == "Updated content"
+
+
+@pytest.mark.django_db
+def test_post_update_serializer_edit_after_30_minutes(user):
+    post = Post.objects.create(author=user, content="Initial content")
+    post.posted_date = post.posted_date - timedelta(minutes=30)
+    post.save()
+
+    serializer = PostUpdateSerializer(
+        instance=post,
+        data={"content": "Updated content"},
+        partial=True,
+    )
+    assert not serializer.is_valid()
+    assert "content" in serializer.errors
+    assert serializer.errors["content"] == ["投稿の編集は投稿後30分以内のみ可能です。"]
