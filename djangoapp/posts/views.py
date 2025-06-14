@@ -93,3 +93,22 @@ class PostUpdateView(APIView):
                 status=200,
             )
         return Response(serializer.errors, status=400)
+
+
+class PostDeleteView(APIView):
+    permission_classes = [IsAuthorOrReadOnly]
+    authentication_classes = [TokenAuthentication]
+
+    def delete(self, request, username, post_id):
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=404)
+        post = Post.objects.filter(id=post_id, author=user).first()
+        if not post:
+            return Response({"detail": "Post not found."}, status=404)
+
+        # APIViewのためオブジェクトパーミッションを明示的にチェック
+        self.check_object_permissions(request, post)
+
+        post.delete()
+        return Response({"message": "Post deleted successfully."}, status=204)
