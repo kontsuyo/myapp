@@ -22,6 +22,7 @@ def test_post_str_method():
     user = Account.objects.create_user(username="testuser", password="password123")
     post = Post.objects.create(author=user, content="This is a test post.")
     expected_str = f"Post by {user.username}"
+    expected_str = f"{user.username} - {post.posted_date.strftime('%Y-%m-%d %H:%M:%S')}: {post.content[:20]}..."
     assert str(post) == expected_str
 
 
