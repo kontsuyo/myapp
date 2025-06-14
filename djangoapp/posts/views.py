@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import Post
+from posts.permissions import IsAuthorOrReadOnly
 from posts.serializers import PostSerializer
 
 User = get_user_model()
@@ -59,3 +60,36 @@ class PostRetrieveView(APIView):
             return Response({"detail": "Post not found."}, status=404)
         serializer = PostSerializer(post, context={"request": request})
         return Response(serializer.data, status=200)
+
+
+class PostUpdateView(APIView):
+    permission_classes = [IsAuthorOrReadOnly]
+    authentication_classes = [TokenAuthentication]
+
+    def patch(self, request, username, post_id):
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=404)
+        post = Post.objects.filter(id=post_id, author=user).first()
+        if not post:
+            return Response({"detail": "Post not found."}, status=404)
+
+        # オブジェクトパーミッションを明示的にチェック
+        self.check_object_permissions(request, post)
+
+        serializer = PostSerializer(post, data=request.data, partial=True, context={"request": request})
+        if serializer.is_valid():
+            updated_post = serializer.save()
+            return Response(
+                {
+                    "message": "Post updated successfully.",
+                    "post": {
+                        "id": updated_post.id,
+                        "author": updated_post.author.username,
+                        "content": updated_post.content,
+                        "posted_date": updated_post.posted_date.isoformat(),
+                    },
+                },
+                status=200,
+            )
+        return Response(serializer.errors, status=400)

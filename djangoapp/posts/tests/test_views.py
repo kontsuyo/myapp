@@ -4,6 +4,7 @@ import pytest
 from django.urls import reverse
 
 from posts.models import Post
+from users.models import Account
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,94 @@ def test_post_detail_view_user_not_found(api_client):
         },
     )
     response = api_client.get(url, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 404
+    assert response.data["detail"] == "User not found."
+
+
+@pytest.mark.django_db
+def test_post_update_view_success(api_client, user):
+    post = Post.objects.create(author=user, content="Initial content")
+    url = reverse(
+        "post-update",
+        kwargs={
+            "username": user.username,
+            "post_id": post.id,  # pyright: ignore[reportAttributeAccessIssue]
+        },
+    )
+    api_client.force_authenticate(user=user)
+    data = {"content": "Updated content"}
+    response = api_client.patch(url, data, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 200
+    assert response.data["post"]["content"] == "Updated content"
+
+
+@pytest.mark.django_db
+def test_post_update_view_unauthenticated(api_client, user):
+    post = Post.objects.create(author=user, content="Initial content")
+    url = reverse(
+        "post-update",
+        kwargs={
+            "username": user.username,
+            "post_id": post.id,  # pyright: ignore[reportAttributeAccessIssue]
+        },
+    )
+    data = {"content": "Updated content"}
+    response = api_client.patch(url, data, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 401
+    assert response.data["detail"] == "認証情報が含まれていません。"
+
+
+@pytest.mark.django_db
+def test_post_update_view_not_authorized(api_client, user):
+    other_user = Account.objects.create_user(username="otheruser", password="password")
+    post = Post.objects.create(author=other_user, content="Initial content")
+    url = reverse(
+        "post-update",
+        kwargs={
+            "username": other_user.username,
+            "post_id": post.id,  # pyright: ignore[reportAttributeAccessIssue]
+        },
+    )
+    api_client.force_authenticate(user=user)
+    data = {"content": "Updated content"}
+    response = api_client.patch(url, data, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 403
+    assert response.data["detail"] == "このアクションを実行する権限がありません。"
+
+
+@pytest.mark.django_db
+def test_post_update_view_post_not_found(api_client, user):
+    url = reverse(
+        "post-update",
+        kwargs={
+            "username": user.username,
+            "post_id": 9999,  # Non-existent post ID
+        },
+    )
+    api_client.force_authenticate(user=user)
+    data = {"content": "Updated content"}
+    response = api_client.patch(url, data, format="json")
+    logger.info(f"Response data: {response.data}")
+    assert response.status_code == 404
+    assert response.data["detail"] == "Post not found."
+
+
+@pytest.mark.django_db
+def test_post_update_view_user_not_found(api_client):
+    url = reverse(
+        "post-update",
+        kwargs={
+            "username": "nonexistentuser",
+            "post_id": 1,  # Non-existent user
+        },
+    )
+    api_client.force_authenticate(user=Account.objects.create_user(username="testuser", password="password"))
+    data = {"content": "Updated content"}
+    response = api_client.patch(url, data, format="json")
     logger.info(f"Response data: {response.data}")
     assert response.status_code == 404
     assert response.data["detail"] == "User not found."
