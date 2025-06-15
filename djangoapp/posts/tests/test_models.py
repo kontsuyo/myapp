@@ -9,26 +9,21 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
-def test_post_post_creation():
-    user = Account.objects.create_user(username="testuser", password="password123")
-    post = Post.objects.create(author=user, content="This is a test post.")
+def test_post_post_creation(user, post):
     assert post.author == user
     assert post.content == "This is a test post."
     assert post.posted_date is not None
 
 
 @pytest.mark.django_db
-def test_post_str_method():
-    user = Account.objects.create_user(username="testuser", password="password123")
-    post = Post.objects.create(author=user, content="This is a test post.")
+def test_post_str_method(user, post):
     expected_str = f"Post by {user.username}"
     expected_str = f"{user.username} - {post.posted_date.strftime('%Y-%m-%d %H:%M:%S')}: {post.content[:20]}..."
     assert str(post) == expected_str
 
 
 @pytest.mark.django_db
-def test_post_ordering():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_post_ordering(user):
     post1 = Post.objects.create(author=user, content="First post.")
     post2 = Post.objects.create(author=user, content="Second post.")
 
