@@ -3,9 +3,14 @@ from datetime import timedelta
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIRequestFactory
 
-from posts.serializers import PostCreateSerializer, PostUpdateSerializer
+from posts.serializers import (
+    PostCreateSerializer,
+    PostListSerializer,
+    PostUpdateSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +89,18 @@ def test_post_create_serializer_posted_date_read_only(user, post_data):
     assert not post.posted_date == "2023-01-01T00:00:00Z"
     assert post.posted_date is not None
     assert post.author == user
+
+
+@pytest.mark.django_db
+def test_post_list_serializer_valid_data(post):
+    serializer = PostListSerializer(post)
+    data = serializer.data
+    # posted_dateをJSTに変換して比較
+    jst_posted_date = timezone.localtime(post.posted_date).isoformat()
+    assert data["posted_date"] == jst_posted_date
+    assert data["id"] == post.id
+    assert data["author"] == post.author.username
+    assert data["content"] == post.content
 
 
 @pytest.mark.django_db
