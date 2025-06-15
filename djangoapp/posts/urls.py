@@ -3,12 +3,14 @@ from django.urls import path
 from posts.views import (
     PostCreateView,
     PostDeleteView,
+    PostHomeView,
     PostListView,
     PostRetrieveView,
     PostUpdateView,
 )
 
 urlpatterns = [
+    path("home", PostHomeView.as_view(), name="home"),
     path("post", PostCreateView.as_view(), name="post"),
     path("<slug:username>/", PostListView.as_view(), name="post-list"),
     path("<slug:username>/<int:post_id>", PostRetrieveView.as_view(), name="post-detail"),
