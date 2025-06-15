@@ -21,6 +21,14 @@ class PostCreateSerializer(serializers.ModelSerializer):
         return post
 
 
+class PostListSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source="author.username")
+
+    class Meta:
+        model = Post
+        fields = ["id", "author", "content", "posted_date"]
+
+
 class PostUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
