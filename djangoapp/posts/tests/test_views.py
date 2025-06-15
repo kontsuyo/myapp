@@ -88,8 +88,7 @@ def test_post_list_view_no_posts(api_client, user):
 
 
 @pytest.mark.django_db
-def test_post_detail_view_success(api_client, user):
-    post = Post.objects.create(author=user, content="Test post for detail view")
+def test_post_detail_view_success(api_client, user, post):
     url = reverse(
         "post-detail",
         kwargs={
@@ -101,7 +100,7 @@ def test_post_detail_view_success(api_client, user):
     logger.info(f"Response data: {response.data}")
     assert response.status_code == 200
     assert response.data["author"] == user.username
-    assert response.data["content"] == "Test post for detail view"
+    assert response.data["content"] == post.content
     assert "posted_date" in response.data
 
 
@@ -136,8 +135,7 @@ def test_post_detail_view_user_not_found(api_client):
 
 
 @pytest.mark.django_db
-def test_post_update_view_success(api_client, user):
-    post = Post.objects.create(author=user, content="Initial content")
+def test_post_update_view_success(api_client, user, post):
     url = reverse(
         "post-update",
         kwargs={
@@ -154,8 +152,7 @@ def test_post_update_view_success(api_client, user):
 
 
 @pytest.mark.django_db
-def test_post_update_view_unauthenticated(api_client, user):
-    post = Post.objects.create(author=user, content="Initial content")
+def test_post_update_view_unauthenticated(api_client, user, post):
     url = reverse(
         "post-update",
         kwargs={
@@ -171,14 +168,12 @@ def test_post_update_view_unauthenticated(api_client, user):
 
 
 @pytest.mark.django_db
-def test_post_update_view_not_authorized(api_client, user):
-    other_user = Account.objects.create_user(username="otheruser", password="password")
-    post = Post.objects.create(author=other_user, content="Initial content")
+def test_post_update_view_not_authorized(api_client, user, other_user, other_post):
     url = reverse(
         "post-update",
         kwargs={
             "username": other_user.username,
-            "post_id": post.id,  # pyright: ignore[reportAttributeAccessIssue]
+            "post_id": other_post.id,  # pyright: ignore[reportAttributeAccessIssue]
         },
     )
     api_client.force_authenticate(user=user)
@@ -224,8 +219,7 @@ def test_post_update_view_user_not_found(api_client):
 
 
 @pytest.mark.django_db
-def test_post_delete_view_success(api_client, user):
-    post = Post.objects.create(author=user, content="Post to be deleted")
+def test_post_delete_view_success(api_client, user, post):
     url = reverse(
         "post-delete",
         kwargs={
@@ -241,8 +235,7 @@ def test_post_delete_view_success(api_client, user):
 
 
 @pytest.mark.django_db
-def test_post_delete_view_unauthenticated(api_client, user):
-    post = Post.objects.create(author=user, content="Post to be deleted")
+def test_post_delete_view_unauthenticated(api_client, user, post):
     url = reverse(
         "post-delete",
         kwargs={
@@ -257,14 +250,12 @@ def test_post_delete_view_unauthenticated(api_client, user):
 
 
 @pytest.mark.django_db
-def test_post_delete_view_not_authorized(api_client, user):
-    other_user = Account.objects.create_user(username="otheruser", password="password")
-    post = Post.objects.create(author=other_user, content="Post to be deleted")
+def test_post_delete_view_not_authorized(api_client, user, other_user, other_post):
     url = reverse(
         "post-delete",
         kwargs={
             "username": other_user.username,
-            "post_id": post.id,  # pyright: ignore[reportAttributeAccessIssue]
+            "post_id": other_post.id,  # pyright: ignore[reportAttributeAccessIssue]
         },
     )
     api_client.force_authenticate(user=user)

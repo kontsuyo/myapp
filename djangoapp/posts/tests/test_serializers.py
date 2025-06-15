@@ -2,22 +2,23 @@ import logging
 from datetime import timedelta
 
 import pytest
+from django.urls import reverse
 from rest_framework.test import APIRequestFactory
 
-from posts.models import Post
 from posts.serializers import PostCreateSerializer, PostUpdateSerializer
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
-def test_serializer_create_post(user):
+def test_post_create_serializer_valid_data(user, post_data):
     factory = APIRequestFactory()
-    request = factory.post("/posts/", {"content": "This is a test post."})
+    url = reverse("post")
+    request = factory.post(url, post_data)
     request.user = user
 
     serializer = PostCreateSerializer(
-        data={"content": "This is a test post."},
+        data=post_data,
         context={"request": request},
     )
     assert serializer.is_valid(), serializer.errors
@@ -27,9 +28,10 @@ def test_serializer_create_post(user):
 
 
 @pytest.mark.django_db
-def test_serializer_create_post_empty_content(user):
+def test_post_create_serializer_empty_content(user, post_data):
     factory = APIRequestFactory()
-    request = factory.post("/posts/", {"content": ""})
+    url = reverse("post")
+    request = factory.post(url, post_data)
     request.user = user
 
     serializer = PostCreateSerializer(
@@ -47,9 +49,10 @@ def test_serializer_create_post_empty_content(user):
 
 
 @pytest.mark.django_db
-def test_post_serializer_author_read_only(user):
+def test_post_create_serializer_author_read_only(user, post_data):
     factory = APIRequestFactory()
-    request = factory.post("/posts/", {"content": "test"})
+    url = reverse("post")
+    request = factory.post(url, post_data)
     request.user = user
 
     # authorを入力データで上書きしようとしても無視されることを確認
@@ -64,9 +67,10 @@ def test_post_serializer_author_read_only(user):
 
 
 @pytest.mark.django_db
-def test_post_serializer_posted_date_read_only(user):
+def test_post_create_serializer_posted_date_read_only(user, post_data):
     factory = APIRequestFactory()
-    request = factory.post("/posts/", {"content": "test"})
+    url = reverse("post")
+    request = factory.post(url, post_data)
     request.user = user
 
     serializer = PostCreateSerializer(
@@ -83,10 +87,7 @@ def test_post_serializer_posted_date_read_only(user):
 
 
 @pytest.mark.django_db
-def test_post_update_serializer_valid_data(user):
-
-    post = Post.objects.create(author=user, content="Initial content")
-
+def test_post_update_serializer_valid_data(post):
     serializer = PostUpdateSerializer(
         instance=post,
         data={"content": "Updated content"},
@@ -98,9 +99,7 @@ def test_post_update_serializer_valid_data(user):
 
 
 @pytest.mark.django_db
-def test_post_update_serializer_read_only_fields(user):
-    post = Post.objects.create(author=user, content="Initial content")
-
+def test_post_update_serializer_read_only_fields(user, post):
     serializer = PostUpdateSerializer(
         instance=post,
         data={"author": 9999, "posted_date": "2023-01-01T00:00:00Z"},
@@ -114,8 +113,7 @@ def test_post_update_serializer_read_only_fields(user):
 
 
 @pytest.mark.django_db
-def test_post_update_serializer_edit_before_30_minutes(user):
-    post = Post.objects.create(author=user, content="Initial content")
+def test_post_update_serializer_edit_before_30_minutes(post):
     post.posted_date = post.posted_date - timedelta(minutes=29)
     post.save()
 
@@ -130,8 +128,7 @@ def test_post_update_serializer_edit_before_30_minutes(user):
 
 
 @pytest.mark.django_db
-def test_post_update_serializer_edit_after_30_minutes(user):
-    post = Post.objects.create(author=user, content="Initial content")
+def test_post_update_serializer_edit_after_30_minutes(post):
     post.posted_date = post.posted_date - timedelta(minutes=30)
     post.save()
 
