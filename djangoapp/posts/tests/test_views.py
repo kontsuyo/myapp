@@ -66,7 +66,8 @@ def test_post_list_view_success(api_client, user):
     response = api_client.get(url, format="json")
     logger.info(f"Response data: {response.data}")
     assert response.status_code == 200
-    assert isinstance(response.data, list)
+    assert isinstance(response.data["posts"], list)
+    assert response.data["profile"]["user"]["username"] == user.username
 
 
 @pytest.mark.django_db
