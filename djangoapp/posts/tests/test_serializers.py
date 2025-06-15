@@ -5,7 +5,7 @@ import pytest
 from rest_framework.test import APIRequestFactory
 
 from posts.models import Post
-from posts.serializers import PostSerializer, PostUpdateSerializer
+from posts.serializers import PostCreateSerializer, PostUpdateSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ def test_serializer_create_post(user):
     request = factory.post("/posts/", {"content": "This is a test post."})
     request.user = user
 
-    serializer = PostSerializer(
+    serializer = PostCreateSerializer(
         data={"content": "This is a test post."},
         context={"request": request},
     )
@@ -32,7 +32,7 @@ def test_serializer_create_post_empty_content(user):
     request = factory.post("/posts/", {"content": ""})
     request.user = user
 
-    serializer = PostSerializer(
+    serializer = PostCreateSerializer(
         data={"content": ""},
         context={"request": request},
     )
@@ -40,7 +40,7 @@ def test_serializer_create_post_empty_content(user):
     assert "content" in serializer.errors
     assert serializer.errors["content"] == ["この項目は空にできません。"]
 
-    serializer = PostSerializer(
+    serializer = PostCreateSerializer(
         data={"content": "test", "author": 9999},
         context={"request": request},
     )
@@ -53,7 +53,7 @@ def test_post_serializer_author_read_only(user):
     request.user = user
 
     # authorを入力データで上書きしようとしても無視されることを確認
-    serializer = PostSerializer(
+    serializer = PostCreateSerializer(
         data={"content": "test", "author": 9999},
         context={"request": request},
     )
@@ -69,7 +69,7 @@ def test_post_serializer_posted_date_read_only(user):
     request = factory.post("/posts/", {"content": "test"})
     request.user = user
 
-    serializer = PostSerializer(
+    serializer = PostCreateSerializer(
         data={"content": "test", "posted_date": "2023-01-01T00:00:00Z"},
         context={"request": request},
     )

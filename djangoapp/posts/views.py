@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from posts.models import Post
 from posts.permissions import IsAuthorOrReadOnly
-from posts.serializers import PostSerializer
+from posts.serializers import PostCreateSerializer
 
 User = get_user_model()
 
@@ -16,7 +16,7 @@ class PostCreateView(APIView):
     authentication_classes = [TokenAuthentication]
 
     def post(self, request):
-        serializer = PostSerializer(data=request.data, context={"request": request})
+        serializer = PostCreateSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             post = serializer.save()
             return Response(
@@ -44,7 +44,7 @@ class PostListView(APIView):
         if not user.posts.exists():  # pyright: ignore[reportAttributeAccessIssue]
             return Response({"detail": "No posts found for this user."}, status=404)
         posts = user.posts.all()  # pyright: ignore[reportAttributeAccessIssue]
-        serializer = PostSerializer(posts, many=True, context={"request": request})
+        serializer = PostCreateSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data, status=200)
 
 
@@ -58,7 +58,7 @@ class PostRetrieveView(APIView):
         post = Post.objects.filter(id=post_id).first()
         if not post:
             return Response({"detail": "Post not found."}, status=404)
-        serializer = PostSerializer(post, context={"request": request})
+        serializer = PostCreateSerializer(post, context={"request": request})
         return Response(serializer.data, status=200)
 
 
@@ -77,7 +77,7 @@ class PostUpdateView(APIView):
         # オブジェクトパーミッションを明示的にチェック
         self.check_object_permissions(request, post)
 
-        serializer = PostSerializer(post, data=request.data, partial=True, context={"request": request})
+        serializer = PostCreateSerializer(post, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             updated_post = serializer.save()
             return Response(
