@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,6 +15,21 @@ from posts.serializers import (
 from users.serializers import ProfileSerializer
 
 User = get_user_model()
+
+
+class PostHomeView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        posts = Post.objects.all().order_by("-posted_date")
+        if not posts.exists():
+            return Response({"detail": "No posts available."}, status=404)
+        # ページネーションを適用
+        paginator = PageNumberPagination()
+        paginator.page_size = 20  # 1ページあたり20件（必要に応じて調整）
+        page = paginator.paginate_queryset(posts, request)
+        serializer = PostListSerializer(page, many=True, context={"request": request})
+        return paginator.get_paginated_response({"posts": serializer.data})
 
 
 class PostCreateView(APIView):

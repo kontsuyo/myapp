@@ -10,6 +10,32 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
+def test_post_home_view_success(api_client, posts):
+    url = reverse("home")
+    response = api_client.get(url, format="json")
+    assert response.status_code == 200
+    assert isinstance(response.data["results"]["posts"], list)
+
+
+@pytest.mark.django_db
+def test_post_home_view_no_posts(api_client):
+    url = reverse("home")
+    response = api_client.get(url, format="json")
+    assert response.status_code == 404
+    assert response.data["detail"] == "No posts available."
+
+
+@pytest.mark.django_db
+def test_post_home_view_pagination(api_client, posts):
+    url = reverse("home")
+    response = api_client.get(url, format="json")
+    assert response.status_code == 200
+    assert "next" in response.data
+    assert "previous" in response.data
+    assert len(response.data["results"]["posts"]) <= 20
+
+
+@pytest.mark.django_db
 def test_post_create_view_success(api_client, user):
     api_client.force_authenticate(user=user)
     url = reverse("post")
