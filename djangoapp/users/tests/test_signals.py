@@ -2,14 +2,12 @@ import logging
 
 import pytest
 
-from users.models import Account
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
-def test_signal_profile_creation_on_user_save():
-    user = Account.objects.create_user(username="testuser", password="testpassword")
+def test_signal_profile_creation_on_user_save(user):
     assert hasattr(user, "profile")
     assert user.profile.handle == ""  # pyright:ignore[reportAttributeAccessIssue]
     assert user.profile.bio == ""  # pyright:ignore[reportAttributeAccessIssue]
@@ -18,8 +16,7 @@ def test_signal_profile_creation_on_user_save():
 
 
 @pytest.mark.django_db
-def test_signal_profile_update_on_user_save():
-    user = Account.objects.create_user(username="testuser", password="testpassword")
+def test_signal_profile_update_on_user_save(user):
     user.username = "updateduser"
     user.profile.handle = "Updated Handle"  # pyright:ignore[reportAttributeAccessIssue]
     user.profile.bio = "Updated bio."  # pyright:ignore[reportAttributeAccessIssue]

@@ -61,9 +61,7 @@ def test_register_serializer_password_too_short():
     }
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
-    assert "8文字以上のパスワードを入力してください。" in str(
-        serializer.errors["password"]
-    )
+    assert "8文字以上のパスワードを入力してください。" in str(serializer.errors["password"])
 
 
 def test_register_serializer_empty_fields():
@@ -77,9 +75,7 @@ def test_register_serializer_empty_fields():
     logger.debug(serializer.errors)
     assert "ユーザー名を入力してください。" in str(serializer.errors["username"])
     assert "パスワードを入力してください。" in str(serializer.errors["password"])
-    assert "確認用パスワードを入力してください。" in str(
-        serializer.errors["password_confirm"]
-    )
+    assert "確認用パスワードを入力してください。" in str(serializer.errors["password_confirm"])
 
 
 @pytest.mark.django_db
@@ -91,9 +87,7 @@ def test_register_serializer_invalid_username():
     }
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
-    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(
-        serializer.errors["username"]
-    )
+    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
@@ -118,9 +112,7 @@ def test_register_serializer_username_too_long():
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
     assert "username" in serializer.errors
-    assert "ユーザー名は15文字までにしてください。" in str(
-        serializer.errors["username"]
-    )
+    assert "ユーザー名は15文字までにしてください。" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
@@ -137,27 +129,20 @@ def test_register_serializer_password_write_only():
 
 
 @pytest.mark.django_db
-def test_register_serializer_existing_username():
-    Account.objects.create_user(username="existinguser", password="password123")
+def test_register_serializer_existing_username(user):
     data = {
-        "username": "existinguser",
-        "password": "strongpassword",
-        "password_confirm": "strongpassword",
+        "username": user.username,
+        "password": "testpassword",
+        "password_confirm": "testpassword",
     }
     serializer = RegisterSerializer(data=data)
     assert not serializer.is_valid()
-    assert "ユーザー名は使われています。他のものを選んでください" in str(
-        serializer.errors["username"]
-    )
+    assert "ユーザー名は使われています。他のものを選んでください" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
-def test_login_serializer_valid_data():
-    Account.objects.create_user(username="testuser", password="strongpassword")
-    data = {
-        "username": "testuser",
-        "password": "strongpassword",
-    }
+def test_login_serializer_valid_data(user):
+    data = {"username": user.username, "password": "testpassword"}
     serializer = LoginSerializer(data=data)
     assert serializer.is_valid(), serializer.errors
 
@@ -185,10 +170,9 @@ def test_login_serializer_nonexistent_user():
 
 
 @pytest.mark.django_db
-def test_login_serializer_incorrect_password():
-    Account.objects.create_user(username="testuser", password="strongpassword")
+def test_login_serializer_incorrect_password(user):
     data = {
-        "username": "testuser",
+        "username": user.username,
         "password": "wrongpassword",
     }
     serializer = LoginSerializer(data=data)
@@ -208,8 +192,7 @@ def test_login_serializer_invalid_username():
 
 
 @pytest.mark.django_db
-def test_account_update_serializer_valid_data():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_account_update_serializer_valid_data(user):
     data = {
         "username": "updateusername",
     }
@@ -219,12 +202,11 @@ def test_account_update_serializer_valid_data():
     updateuser = serializer.save()
     assert updateuser.username == data["username"]
     assert Account.objects.filter(username=data["username"]).exists()
-    assert user.id == updateuser.id  # type: ignore
+    assert user.id == updateuser.id
 
 
 @pytest.mark.django_db
-def test_account_update_serializer_empty_fields():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_account_update_serializer_empty_fields(user):
     data = {
         "username": "",
     }
@@ -234,8 +216,7 @@ def test_account_update_serializer_empty_fields():
 
 
 @pytest.mark.django_db
-def test_account_update_serializer_username_too_short():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_account_update_serializer_username_too_short(user):
     data = {
         "username": "usr",
     }
@@ -245,55 +226,44 @@ def test_account_update_serializer_username_too_short():
 
 
 @pytest.mark.django_db
-def test_account_update_serializer_username_too_long():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_account_update_serializer_username_too_long(user):
     data = {
         "username": "thisisaverylongusername",
     }
     serializer = AccountUpdateSerializer(instance=user, data=data)
     assert not serializer.is_valid()
-    assert "ユーザー名は15文字までにしてください。" in str(
-        serializer.errors["username"]
-    )
+    assert "ユーザー名は15文字までにしてください。" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
-def test_account_update_serializer_invalid_username():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_account_update_serializer_invalid_username(user):
     data = {
         "username": "invalid-name",
     }
     serializer = AccountUpdateSerializer(instance=user, data=data)
     assert not serializer.is_valid()
-    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(
-        serializer.errors["username"]
-    )
+    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
-def test_account_update_serializer_username_already_exists():
+def test_account_update_serializer_username_already_exists(user):
     Account.objects.create_user(username="existinguser", password="password123")
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
     data = {
         "username": "existinguser",
     }
     serializer = AccountUpdateSerializer(instance=user, data=data)
     assert not serializer.is_valid()
-    assert "ユーザー名は使われています。他のものを選んでください" in str(
-        serializer.errors["username"]
-    )
+    assert "ユーザー名は使われています。他のものを選んでください" in str(serializer.errors["username"])
 
 
 @pytest.mark.django_db
-def test_user_serializer_output():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_user_serializer_output(user):
     serializer = UserSerializer(user)
     assert serializer.data["username"] == "testuser"
 
 
 @pytest.mark.django_db
-def test_user_serializer_read_only_fields():
-    user = Account.objects.create_user(username="testuser", password="strongpassword")
+def test_user_serializer_read_only_fields(user):
     input_data = {
         "username": "newusername",
     }
@@ -304,8 +274,7 @@ def test_user_serializer_read_only_fields():
 
 
 @pytest.mark.django_db
-def test_profile_serializer_output():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_serializer_output(user):
     profile = Profile.objects.get(user=user)
     data = {
         "handle": "handle",
@@ -325,8 +294,7 @@ def test_profile_serializer_output():
 
 
 @pytest.mark.django_db
-def test_profile_serializer_user_read_only():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_serializer_user_read_only(user):
     profile = Profile.objects.get(user=user)
     data = {
         "user": {"username": "newusername"},
