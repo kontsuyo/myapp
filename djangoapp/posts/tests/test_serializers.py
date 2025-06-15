@@ -9,6 +9,7 @@ from rest_framework.test import APIRequestFactory
 from posts.serializers import (
     PostCreateSerializer,
     PostListSerializer,
+    PostRetrieveSerializer,
     PostUpdateSerializer,
 )
 
@@ -94,6 +95,18 @@ def test_post_create_serializer_posted_date_read_only(user, post_data):
 @pytest.mark.django_db
 def test_post_list_serializer_valid_data(post):
     serializer = PostListSerializer(post)
+    data = serializer.data
+    # posted_dateをJSTに変換して比較
+    jst_posted_date = timezone.localtime(post.posted_date).isoformat()
+    assert data["posted_date"] == jst_posted_date
+    assert data["id"] == post.id
+    assert data["author"] == post.author.username
+    assert data["content"] == post.content
+
+
+@pytest.mark.django_db
+def test_post_retrieve_serializer_valid_data(post):
+    serializer = PostRetrieveSerializer(post)
     data = serializer.data
     # posted_dateをJSTに変換して比較
     jst_posted_date = timezone.localtime(post.posted_date).isoformat()
