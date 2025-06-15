@@ -6,7 +6,11 @@ from rest_framework.views import APIView
 
 from posts.models import Post
 from posts.permissions import IsAuthorOrReadOnly
-from posts.serializers import PostCreateSerializer, PostListSerializer
+from posts.serializers import (
+    PostCreateSerializer,
+    PostListSerializer,
+    PostRetrieveSerializer,
+)
 from users.serializers import ProfileSerializer
 
 User = get_user_model()
@@ -46,7 +50,9 @@ class PostListView(APIView):
         if not posts.exists():
             return Response({"detail": "No posts found for this user."}, status=404)
         posts_serializer = PostListSerializer(posts, many=True, context={"request": request})
-        profile_serializer = ProfileSerializer(user.profile, context={"request": request})  # pyright: ignore[reportAttributeAccessIssue]
+        profile_serializer = ProfileSerializer(
+            user.profile, context={"request": request}  # pyright: ignore[reportAttributeAccessIssue]
+        )
         return Response({"posts": posts_serializer.data, "profile": profile_serializer.data}, status=200)
 
 
@@ -60,7 +66,7 @@ class PostRetrieveView(APIView):
         post = Post.objects.filter(id=post_id).first()
         if not post:
             return Response({"detail": "Post not found."}, status=404)
-        serializer = PostCreateSerializer(post, context={"request": request})
+        serializer = PostRetrieveSerializer(post, context={"request": request})
         return Response(serializer.data, status=200)
 
 
