@@ -13,24 +13,20 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
-def test_account_creation():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_account_creation(user):
     assert user.username == "testuser"
-    assert user.check_password("password123")
+    assert user.check_password("testpassword")
 
 
 @pytest.mark.django_db
-def test_account_username_unique_constraint():
-    Account.objects.create_user(username="uniqueuser", password="password123")
-
+def test_account_username_unique_constraint(user):
     with pytest.raises(IntegrityError) as excinfo:
-        Account.objects.create_user(username="uniqueuser", password="password456")
+        Account.objects.create_user(username=user.username, password="password456")
     assert "duplicate key value violates unique constraint" in str(excinfo.value)
 
 
 @pytest.mark.django_db
-def test_account_str_representation():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_account_str_representation(user):
     assert str(user) == "testuser"
 
 
@@ -49,10 +45,9 @@ def test_account_creation_without_username():
 
 
 @pytest.mark.django_db
-def test_account_password_storaged_hash():
-    user = Account.objects.create_user(username="testuser", password="password123")
-    assert user.password != "password123"
-    assert user.check_password("password123")
+def test_account_password_storaged_hash(user):
+    assert user.password != "testpassword"
+    assert user.check_password("testpassword")
 
 
 @pytest.mark.django_db
@@ -68,16 +63,14 @@ def test_account_superuser_creation():
 
 
 @pytest.mark.django_db
-def test_account_create_auth_token():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_account_create_auth_token(user):
     token = Token.objects.get(user=user)
     assert token.key is not None, "ユーザー作成時にトークンが生成されていません"
     assert token.user == user
 
 
 @pytest.mark.django_db
-def test_profile_creation():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_creation(user):
     assert user.profile.user == user  # pyright:ignore[reportAttributeAccessIssue]
     assert user.profile.handle == ""  # pyright:ignore[reportAttributeAccessIssue]
     assert user.profile.bio == ""  # pyright:ignore[reportAttributeAccessIssue]
@@ -86,8 +79,7 @@ def test_profile_creation():
 
 
 @pytest.mark.django_db
-def test_profile_image_upload():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_image_upload(user):
     profile = user.profile  # pyright:ignore[reportAttributeAccessIssue]
     image_content = b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x4c\x01\x00\x3b"
     image_file = SimpleUploadedFile("test_image.gif", io.BytesIO(image_content).getvalue(), content_type="image/gif")
@@ -97,8 +89,7 @@ def test_profile_image_upload():
 
 
 @pytest.mark.django_db
-def test_profile_handle_max_length():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_handle_max_length(user):
     profile = user.profile  # pyright:ignore[reportAttributeAccessIssue]
     profile.handle = "a" * 51
     with pytest.raises(DataError) as excinfo:
@@ -107,8 +98,7 @@ def test_profile_handle_max_length():
 
 
 @pytest.mark.django_db
-def test_profile_bio_max_length():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_bio_max_length(user):
     profile = user.profile  # pyright:ignore[reportAttributeAccessIssue]
     profile.bio = "b" * 161
     with pytest.raises(DataError) as excinfo:
@@ -117,8 +107,7 @@ def test_profile_bio_max_length():
 
 
 @pytest.mark.django_db
-def test_profile_place_max_length():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_place_max_length(user):
     profile = user.profile  # pyright:ignore[reportAttributeAccessIssue]
     profile.place = "c" * 31
     with pytest.raises(DataError) as excinfo:
@@ -127,8 +116,7 @@ def test_profile_place_max_length():
 
 
 @pytest.mark.django_db
-def test_profile_website_max_length():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_website_max_length(user):
     profile = user.profile  # pyright:ignore[reportAttributeAccessIssue]
     profile.website = "https://example.com/" + "d" * 101
     with pytest.raises(DataError) as excinfo:
@@ -137,8 +125,7 @@ def test_profile_website_max_length():
 
 
 @pytest.mark.django_db
-def test_profile_deleted_when_user_deleted():
-    user = Account.objects.create_user(username="testuser", password="password123")
+def test_profile_deleted_when_user_deleted(user):
     profile_id = user.profile.id  # pyright:ignore[reportAttributeAccessIssue]
     user.delete()
     assert not Profile.objects.filter(id=profile_id).exists()

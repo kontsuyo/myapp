@@ -39,11 +39,10 @@ def test_user_registration_password_mismatch(api_client):
 
 
 @pytest.mark.django_db
-def test_user_registration_duplicate_username(api_client):
-    Account.objects.create_user(username="existinguser", password="password123")
+def test_user_registration_duplicate_username(api_client, user):
     url = reverse("register-account")
     data = {
-        "username": "existinguser",
+        "username": user.username,
         "password": "securepassword",
         "password_confirm": "securepassword",
     }
@@ -64,18 +63,15 @@ def test_user_registration_empty_fields(api_client):
     assert response.status_code == 400
     assert "ユーザー名を入力してください。" in str(response.data["username"])
     assert "パスワードを入力してください。" in str(response.data["password"])
-    assert "確認用パスワードを入力してください。" in str(
-        response.data["password_confirm"]
-    )
+    assert "確認用パスワードを入力してください。" in str(response.data["password_confirm"])
 
 
 @pytest.mark.django_db
-def test_user_login_success(api_client):
-    Account.objects.create_user(username="testuser", password="securepassword")
+def test_user_login_success(api_client, user):
     url = reverse("login")
     data = {
-        "username": "testuser",
-        "password": "securepassword",
+        "username": user.username,
+        "password": "testpassword",
     }
     response = api_client.post(url, data, format="json")
     assert response.status_code == 200
@@ -85,8 +81,7 @@ def test_user_login_success(api_client):
 
 
 @pytest.mark.django_db
-def test_user_login_invalid_username(api_client):
-    Account.objects.create_user(username="testuser", password="securepassword")
+def test_user_login_invalid_username(api_client, user):
     url = reverse("login")
     data = {
         "username": "wronguser",
@@ -98,11 +93,10 @@ def test_user_login_invalid_username(api_client):
 
 
 @pytest.mark.django_db
-def test_user_login_invalid_password(api_client):
-    Account.objects.create_user(username="testuser", password="securepassword")
+def test_user_login_invalid_password(api_client, user):
     url = reverse("login")
     data = {
-        "username": "testuser",
+        "username": user.username,
         "password": "wrongpassword",
     }
     response = api_client.post(url, data, format="json")
@@ -157,9 +151,7 @@ def test_user_account_update_invalid_username(api_client, user):
     }
     response = api_client.patch(url, data, format="json")
     assert response.status_code == 400
-    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(
-        response.data["username"]
-    )
+    assert "ユーザー名は英数字と'_'(アンダーバー)が使えます" in str(response.data["username"])
 
 
 @pytest.mark.django_db
@@ -172,9 +164,7 @@ def test_user_account_update_duplicate_username(api_client, user):
     }
     response = api_client.patch(url, data, format="json")
     assert response.status_code == 400
-    assert "ユーザー名は使われています。他のものを選んでください" in str(
-        response.data["username"]
-    )
+    assert "ユーザー名は使われています。他のものを選んでください" in str(response.data["username"])
 
 
 @pytest.mark.django_db

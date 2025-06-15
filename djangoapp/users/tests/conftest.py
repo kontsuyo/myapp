@@ -2,6 +2,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
+from users.models import Account
+
 User = get_user_model()
 
 
@@ -24,11 +26,7 @@ def user_data():
 
 @pytest.fixture
 def user():
-    """
-    Fixture to create a user for testing.
-    """
-    user = User.objects.create_user(username="testuser", password="testpassword")
-    return user
+    return Account.objects.create_user(username="testuser", password="testpassword")
 
 
 @pytest.fixture
