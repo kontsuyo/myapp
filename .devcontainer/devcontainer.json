@@ -2,7 +2,7 @@
   "name": "myapp", // このコンテナの設定名
   "dockerComposeFile": "compose.yml",
   "service": "djangoapp",
-  "workspaceFolder": "/home/user1/dev",
+  "workspaceFolder": "/workspaces/myapp",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -30,5 +30,6 @@
         "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
-  }
+  },
+  "forwardPorts": [5173]
 }
