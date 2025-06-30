@@ -315,3 +315,6 @@ pyrightconfig.json
 # Ignore all local history of files
 .history
 .ionide
+
+# Vite
+.vite/
