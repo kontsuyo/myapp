@@ -1,5 +1,6 @@
 django ~= 4.2.0 # 4.2以上4.3未満
 djangorestframework
+django-cors-headers
 django-environ
 # M1Macはpsycopg2、それ以外はpsycopg2-binary
 psycopg2-binary
